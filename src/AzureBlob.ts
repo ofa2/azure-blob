@@ -52,7 +52,7 @@ class AzureBlob {
     return this.initDeferred.promise;
   }
 
-  public async uploadBuffer(blobName: string, buffer: Buffer) {
+  public async uploadBuffer(key: string, buffer: Buffer) {
     await this.checkInit();
 
     let stream = AzureBlob.bufferToStream(buffer);
@@ -61,7 +61,7 @@ class AzureBlob {
     await new Promise((resolve, reject) => {
       this.service.createBlockBlobFromStream(
         this.containerName,
-        blobName,
+        key,
         stream,
         streamLength,
         {},
@@ -75,7 +75,7 @@ class AzureBlob {
       );
     });
 
-    return this.getUrl(blobName);
+    return this.getUrl(key);
   }
 
   private async createContainer() {

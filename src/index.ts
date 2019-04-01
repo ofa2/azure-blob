@@ -24,3 +24,5 @@ export default function lift(config: IConfig) {
   // @ts-ignore
   this.azureBlob = azureBlob;
 }
+
+export { lift };
