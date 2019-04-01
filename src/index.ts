@@ -5,24 +5,24 @@ interface IConfig {
   azureBlob: IAzureBlob;
 }
 
-export default function lift(config: IConfig) {
-  if (!config.azureBlob) {
+async function lift(this: { config: IConfig; azureBlob?: AzureBlob }) {
+  if (!this.config.azureBlob) {
     throw new Error('no azureBlob config found');
   }
 
   if (
-    !config.azureBlob.accountName
-    || !config.azureBlob.accountKey
-    || !config.azureBlob.endpoint
-    || !config.azureBlob.containerName
+    !this.config.azureBlob.accountName
+    || !this.config.azureBlob.accountKey
+    || !this.config.azureBlob.endpoint
+    || !this.config.azureBlob.containerName
   ) {
     throw new Error('azureBlob config need accountName, accountKey, endpoint, containerName');
   }
 
-  let azureBlob = new AzureBlob(config.azureBlob);
+  let azureBlob = new AzureBlob(this.config.azureBlob);
 
-  // @ts-ignore
   this.azureBlob = azureBlob;
 }
 
 export { lift };
+export default lift;
