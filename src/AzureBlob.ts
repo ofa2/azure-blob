@@ -6,8 +6,9 @@ import { defer, IDeferred } from './util';
 export interface IAzureBlob {
   accountName: string;
   accountKey: string;
-  endpoint: string;
   containerName: string;
+  baseUrl: string;
+  fileKeyPrefix?: string;
 }
 
 class AzureBlob {
@@ -15,15 +16,20 @@ class AzureBlob {
 
   private containerName: string;
 
-  private endpoint: string;
+  private baseUrl: string;
+
+  private fileKeyPrefix: string | undefined;
 
   private initDeferred: IDeferred<void> | null = null;
 
   constructor({
-    accountName, accountKey, endpoint, containerName,
+    accountName, accountKey, baseUrl, containerName, fileKeyPrefix,
   }: IAzureBlob) {
     this.containerName = containerName;
-    this.endpoint = endpoint;
+    this.fileKeyPrefix = fileKeyPrefix;
+
+    this.baseUrl = baseUrl;
+    let endpoint = baseUrl.replace(/^https?:\/\//, '');
 
     this.service = createBlobService(accountName, accountKey, endpoint);
   }
@@ -52,8 +58,13 @@ class AzureBlob {
     return this.initDeferred.promise;
   }
 
-  public async uploadBuffer(key: string, buffer: Buffer) {
+  public async uploadBuffer(fileKey: string, buffer: Buffer) {
     await this.checkInit();
+
+    let key = fileKey;
+    if (this.fileKeyPrefix) {
+      key = `${this.fileKeyPrefix}/${fileKey}`;
+    }
 
     let stream = AzureBlob.bufferToStream(buffer);
     let streamLength = buffer.length;
@@ -94,8 +105,8 @@ class AzureBlob {
     });
   }
 
-  private getUrl(blobName: string) {
-    return `https://${this.endpoint}/${this.containerName}/${blobName}`;
+  private getUrl(fileKey: string) {
+    return `${this.baseUrl}/${this.containerName}/${fileKey}`;
   }
 }
 
